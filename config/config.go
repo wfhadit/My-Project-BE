@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"my-project-be/features/user"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -73,5 +74,8 @@ func InitSQL(c AppConfig) *gorm.DB {
 		fmt.Println("terjadi error", err.Error())
 		return nil
 	}
+
+	db.AutoMigrate(&user.User{})
+
 	return db
 }
