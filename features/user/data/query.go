@@ -30,3 +30,11 @@ func (m *model) Login(email string) (user.User, error) {
 	}
 	return result, nil
 }
+
+func (m *model) GetUserByID(id uint) (user.User, error) {
+	result := user.User{}
+	if err := m.connection.Where("id = ?", id).First(&result).Error; err != nil {
+		return user.User{}, err
+	}
+	return result, nil
+}	

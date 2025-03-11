@@ -1,5 +1,7 @@
 package user
 
+import "github.com/golang-jwt/jwt/v5"
+
 type User struct {
 	ID           uint
 	Nama         string
@@ -13,9 +15,11 @@ type User struct {
 type UserService interface {
 	Register(newData User) error
 	Login(loginData User) (User, string, error)
+	KeepLogin(token *jwt.Token) (User, string, error)
 }
 
 type UserModel interface {
 	Register(newData User) error
 	Login(email string) (User, error)
+	GetUserByID(id uint) (User, error)
 }

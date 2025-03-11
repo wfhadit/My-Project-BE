@@ -17,7 +17,7 @@ func JWTMiddleware() echo.MiddlewareFunc {
 }
 
 func GenerateJWT(id uint, nama string) (string, error) {
-	var data = jwt.MapClaims{}
+	data := jwt.MapClaims{}
 	data["id"] = id
 	data["nama"] = nama
 	data["iat"] = time.Now().Unix()
@@ -34,5 +34,26 @@ func GenerateJWT(id uint, nama string) (string, error) {
 	}
 
 	return result, nil
+}
+
+func DecodeToken(token *jwt.Token) (uint, string, int64) {
+	var userID uint
+	var userNama string
+	var exp int64
+	claim := token.Claims.(jwt.MapClaims)
+
+	if val, found := claim["id"];found {
+		userID = uint(val.(float64))
+	}
+
+	if val, found := claim["nama"];found {
+		userNama = val.(string)
+	}
+
+	if val, found := claim["exp"];found {
+		exp = int64(val.(float64))
+	}
+
+	return userID, userNama, exp
 }
 	
