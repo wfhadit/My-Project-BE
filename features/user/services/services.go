@@ -7,8 +7,10 @@ import (
 	"my-project-be/features/user/handler"
 	"my-project-be/helper"
 	"my-project-be/middlewares"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type service struct {
@@ -75,3 +77,24 @@ func (s *service) Login(loginData user.User) (user.User, string, error) {
 	return data, token, nil
 }
 
+func (s *service) KeepLogin(token *jwt.Token) (user.User, string, error) {
+	userID,_, exp := middlewares.DecodeToken(token)
+	result, err := s.model.GetUserByID(userID)
+	if err != nil {
+		log.Println("error dari database user", err.Error())
+		return user.User{},  "",err
+	}
+
+	if time.Now().Unix() > exp {
+		return result, token.Raw, nil
+	}
+
+
+	newToken, err := middlewares.GenerateJWT(result.ID, result.Nama)
+	if err != nil {
+		log.Println("error dari token baru", err.Error())
+		return user.User{},"",  err
+	}
+
+	return result, newToken, nil
+}

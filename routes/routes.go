@@ -4,6 +4,7 @@ import (
 	"my-project-be/features/user/data"
 	"my-project-be/features/user/handler"
 	"my-project-be/features/user/services"
+	"my-project-be/middlewares"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -16,4 +17,5 @@ func InitRoute(c *echo.Echo, db *gorm.DB) {
 
 	c.POST("/register", userHandler.Register)
 	c.POST("/login", userHandler.Login)
+	c.GET("/keeplogin", userHandler.KeepLogin,middlewares.JWTMiddleware()) 
 }

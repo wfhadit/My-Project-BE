@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -53,6 +54,22 @@ func (ct *UserController) Login(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
 	}
-	responseData := LoginResponse{Nama: result.Nama, Email: result.Email, Token: token}
+	responseData := LoginResponse{ ID: result.ID,Nama: result.Nama, Email: result.Email, Token: token}
 	return c.JSON(http.StatusOK, helper.ResponseFormat(http.StatusOK, "Login berhasil", responseData))
+}
+
+func (ct *UserController) KeepLogin(c echo.Context) error {
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"salah cara ambil token", nil))
+	}
+	result, newToken, err := ct.service.KeepLogin(token)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
+	}
+
+	responseData := LoginResponse{ ID: result.ID,Nama: result.Nama, Email: result.Email, Token: newToken}
+
+	return c.JSON(http.StatusOK, helper.ResponseFormat(http.StatusOK, "Login berhasil", responseData))
+
 }
