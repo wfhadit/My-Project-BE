@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"mime/multipart"
 	user "my-project-be/features/user"
 	"my-project-be/helper"
 	"net/http"
@@ -54,8 +55,8 @@ func (ct *UserController) Login(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
 	}
-	responseData := LoginResponse{ ID: result.ID,Nama: result.Nama, Email: result.Email, Token: token}
-	return c.JSON(http.StatusOK, helper.ResponseFormat(http.StatusOK, "Login berhasil", responseData))
+	responseData := LoginResponse{ ID: result.ID, Nama: result.Nama, Email: result.Email, JenisKelamin: result.JenisKelamin, TanggalLahir: result.TanggalLahir,NomorHP: result.NomorHP, Alamat: result.Alamat, Foto: result.Foto}
+	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, token))
 }
 
 func (ct *UserController) KeepLogin(c echo.Context) error {
@@ -67,9 +68,35 @@ func (ct *UserController) KeepLogin(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
 	}
+	responseData := LoginResponse{ ID: result.ID,Nama: result.Nama, Email: result.Email, JenisKelamin: result.JenisKelamin, TanggalLahir: result.TanggalLahir,NomorHP: result.NomorHP, Alamat: result.Alamat, Foto: result.Foto}
+	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, newToken))
+}
 
-	responseData := LoginResponse{ ID: result.ID,Nama: result.Nama, Email: result.Email, Token: newToken}
+func (ct *UserController) Update(c echo.Context) error {
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"salah cara ambil token", nil))
+	}
 
-	return c.JSON(http.StatusOK, helper.ResponseFormat(http.StatusOK, "Login berhasil", responseData))
+	input := UpdateRequest{}
+	errBind := c.Bind(&input)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"gagal input dalam struct", nil))
+	}
+
+	var file *multipart.FileHeader
+	file, err := c.FormFile("file")
+	if err == http.ErrMissingFile {
+		file = nil 
+	} else if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType, "error ambil file", nil))
+	}
+
+	result, err := ct.service.Update(token, user.User{ Nama: input.Nama, Email: input.Email, JenisKelamin: input.JenisKelamin, TanggalLahir: input.TanggalLahir, NomorHP: input.NomorHP, Alamat: input.Alamat }, file)
+	if err != nil  {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"error dalam service", nil))
+	}
+	responseData := UpdateResponse{ Nama: result.Nama, Email: result.Email, TanggalLahir: result.TanggalLahir, JenisKelamin: result.JenisKelamin, NomorHP: result.NomorHP, Alamat: result.Alamat, Foto: result.Foto}
+	return c.JSON(http.StatusOK, responseData)
 
 }

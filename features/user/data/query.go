@@ -25,7 +25,7 @@ func (m *model) Register(newData user.User) error {
 
 func (m *model) Login(email string) (user.User, error) {
 	result := user.User{}
-	if err := m.connection.Where("email = ?", email).Find(&result).Error; err != nil {
+	if err := m.connection.Where("email = ?", email).First(&result).Error; err != nil {
 		return user.User{}, err
 	}
 	return result, nil
@@ -37,4 +37,11 @@ func (m *model) GetUserByID(id uint) (user.User, error) {
 		return user.User{}, err
 	}
 	return result, nil
-}	
+}
+
+func (m *model) Update(id uint, newData user.User) (user.User, error) {
+	if err := m.connection.Where("id = ?", id).Updates(&newData).Error; err != nil {
+		return user.User{}, err
+	}
+	return newData, nil
+}

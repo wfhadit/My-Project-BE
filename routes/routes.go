@@ -18,4 +18,5 @@ func InitRoute(c *echo.Echo, db *gorm.DB) {
 	c.POST("/register", userHandler.Register)
 	c.POST("/login", userHandler.Login)
 	c.GET("/keeplogin", userHandler.KeepLogin,middlewares.JWTMiddleware()) 
+	c.PATCH("/update", userHandler.Update,middlewares.JWTMiddleware())
 }
