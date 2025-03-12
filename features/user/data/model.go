@@ -6,6 +6,7 @@ type User struct {
 	Email        string
 	Password     string
 	JenisKelamin string
+	TanggalLahir string
 	NomorHP      string
 	Alamat       string
 	Foto         string

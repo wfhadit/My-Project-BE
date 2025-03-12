@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"my-project-be/features/user"
+	user "my-project-be/features/user/data"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -18,6 +18,9 @@ type AppConfig struct {
 	DBPort     string
 	DBHost     string
 	DBName     string
+	CLOUDINARY_CLOUD_NAME string
+	CLOUDINARY_API_KEY string
+	CLOUDINARY_API_SECRET string
 }
 
 func assignEnv(c AppConfig) (AppConfig, bool) {
@@ -52,6 +55,22 @@ func assignEnv(c AppConfig) (AppConfig, bool) {
 	} else {
 		missing = true
 	}
+	if val, found := os.LookupEnv("CLOUDINARY_CLOUD_NAME"); found {
+		c.CLOUDINARY_CLOUD_NAME = val
+	} else {
+		missing = true
+	}
+	if val, found := os.LookupEnv("CLOUDINARY_API_KEY"); found {
+		c.CLOUDINARY_API_KEY = val
+	} else {
+		missing = true
+	}
+	if val, found := os.LookupEnv("CLOUDINARY_API_SECRET"); found {
+		c.CLOUDINARY_API_SECRET = val
+	} else {
+		missing = true
+	}
+
 	return c, missing
 }
 
