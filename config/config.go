@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	product "my-project-be/features/product/data"
 	user "my-project-be/features/user/data"
 	"os"
 
@@ -94,7 +95,8 @@ func InitSQL(c AppConfig) *gorm.DB {
 		return nil
 	}
 
-	db.AutoMigrate(&user.User{})
+	db.AutoMigrate(&user.User{}, &product.Product{})
+
 
 	return db
 }
