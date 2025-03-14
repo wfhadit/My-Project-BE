@@ -29,13 +29,7 @@ func (ct *UserController) Register(c echo.Context) error {
 	if errBind != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,bindError+errBind.Error(), nil))
 	}
-
-	inputUser := user.User{
-		Nama:     newUser.Nama,
-		Email:    newUser.Email,
-		Password: newUser.Password,
-	}
-	errInsert := ct.service.Register(inputUser)
+	errInsert := ct.service.Register(user.User{ Nama: newUser.Nama, Email: newUser.Email, Password: newUser.Password})
 	if errInsert != nil {
 		if strings.Contains(errInsert.Error(), "validation") {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
