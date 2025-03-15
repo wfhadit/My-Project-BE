@@ -29,6 +29,6 @@ func InitRoute(c *echo.Echo, db *gorm.DB) {
 	c.PATCH("/update", userHandler.Update,middlewares.JWTMiddleware())
 
 	c.POST("/product", productHandler.CreateProduct,middlewares.JWTMiddleware())
-	c.GET("/product", productHandler.GetAllProduct)
+	c.GET("/search", productHandler.GetAllProduct)
 	c.GET("/product/:productID", productHandler.GetProductById)
 }

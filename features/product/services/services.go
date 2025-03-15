@@ -18,8 +18,8 @@ func (s *service) CreateProduct(newData product.Product) ( product.Product, erro
 	return result, nil
 }
 
-func (s *service) GetAllProducts() ([]product.Product, error) {
-	result, err := s.model.GetAllProducts()
+func (s *service) GetAllProducts(offset int, category, brand, sort, q string) ([]product.Product, error) {
+	result, err := s.model.GetAllProducts(offset, category, brand,  sort, q)
 	if err != nil {
 		return []product.Product{}, err
 	}

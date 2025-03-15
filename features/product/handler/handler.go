@@ -37,15 +37,26 @@ func (pc *ProductController) CreateProduct(c echo.Context) error {
 }
 
 func (pc *ProductController) GetAllProduct(c echo.Context) error {
-	result, err := pc.service.GetAllProducts()
+	category, brand, sort, q := c.QueryParam("category"),c.QueryParam("brand"),c.QueryParam("price"),c.QueryParam("q")
+	page,_ := strconv.Atoi(c.QueryParam("page"))
+	if page < 1 {
+		page = 1
+	}
+
+	offset := (page - 1) * 10	
+	result, err := pc.service.GetAllProducts(offset, category, brand, sort, q)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusInternalServerError, "Server gagal membaca input", nil))
 	}
-	return c.JSON(http.StatusOK, helper.ResponseFormat(http.StatusOK, "Berhasil membaca data", result))
+	response := []ProductResponse{}
+	for _, v := range result {
+		response = append(response, ProductResponse{ ID: v.ID, Nama: v.Nama, Brand: v.Brand, Category: v.Category, Price: v.Price, Amount: v.Amount, Description: v.Description, Image: v.Image })
+	}
+	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Product berhasil dibuat", response))
 }
 
 func (pc *ProductController) GetProductById(c echo.Context) error {
-	productID, err := strconv.ParseUint(c.Param("productID"), 10, 64)
+	productID, err := strconv.Atoi(c.Param("productID"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusBadRequest, "Salah input", nil))
 	}
