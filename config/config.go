@@ -22,6 +22,8 @@ type AppConfig struct {
 	CLOUDINARY_CLOUD_NAME string
 	CLOUDINARY_API_KEY string
 	CLOUDINARY_API_SECRET string
+	RedisAddr string
+	RedisPass string
 }
 
 func assignEnv(c AppConfig) (AppConfig, bool) {
@@ -71,7 +73,16 @@ func assignEnv(c AppConfig) (AppConfig, bool) {
 	} else {
 		missing = true
 	}
-
+	if val, found := os.LookupEnv("RedisAddr"); found {
+		c.RedisAddr = val
+	} else {
+		missing = true
+	}
+	if val, found := os.LookupEnv("RedisPass"); found {
+		c.RedisPass = val
+	} else {
+		missing = true
+	}
 	return c, missing
 }
 
