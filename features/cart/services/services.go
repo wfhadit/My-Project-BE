@@ -16,7 +16,7 @@ func CartService(cm cart.CartModel) cart.CartService {
 }
 
 func (s *service) AddCart(token *jwt.Token, newData cart.Cart)  error {
-	userid,_,_ := middlewares.DecodeToken(token)
+	userid,_ := middlewares.DecodeToken(token)
 	if userid == 0 {
 		return  nil
 	}
@@ -28,7 +28,7 @@ func (s *service) AddCart(token *jwt.Token, newData cart.Cart)  error {
 }
 
 func (s *service) GetCart(token *jwt.Token) ([]cart.Cart, error) {
-	userid,_,_ := middlewares.DecodeToken(token)
+	userid,_:= middlewares.DecodeToken(token)
 	if userid == 0 {
 		return []cart.Cart{}, nil
 	}
@@ -40,7 +40,7 @@ func (s *service) GetCart(token *jwt.Token) ([]cart.Cart, error) {
 }
 
 func (s *service) DeleteCart(token *jwt.Token) error {
-	userid,_,_ := middlewares.DecodeToken(token)
+	userid,_ := middlewares.DecodeToken(token)
 	if userid == 0 {
 		return  nil
 	}
@@ -52,7 +52,7 @@ func (s *service) DeleteCart(token *jwt.Token) error {
 }
 
 func (s *service) DeleteCartByID(token *jwt.Token, productID uint) error {
-	userid,_,_ := middlewares.DecodeToken(token)
+	userid,_ := middlewares.DecodeToken(token)
 	if userid == 0 {
 		return  nil
 	}

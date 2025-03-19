@@ -36,10 +36,9 @@ func GenerateJWT(id uint, nama string) (string, error) {
 	return result, nil
 }
 
-func DecodeToken(token *jwt.Token) (uint, string, int64) {
+func DecodeToken(token *jwt.Token) (uint, string) {
 	var userID uint
 	var userNama string
-	var exp int64
 	claim := token.Claims.(jwt.MapClaims)
 
 	if val, found := claim["id"];found {
@@ -50,10 +49,6 @@ func DecodeToken(token *jwt.Token) (uint, string, int64) {
 		userNama = val.(string)
 	}
 
-	if val, found := claim["exp"];found {
-		exp = int64(val.(float64))
-	}
-
-	return userID, userNama, exp
+	return userID, userNama
 }
 	
