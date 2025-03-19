@@ -13,8 +13,9 @@ func ResponseFormat(code int, message any, data any) map[string]any {
 type LoginResponse struct {
 	User  any `json:"user"`
 	Token any `json:"token"`
+	Cart  any `json:"cart"`
 }
 
-func ResponseFormatLogin(user any, token any) LoginResponse {
-	return LoginResponse{User: user, Token: token}
+func ResponseFormatLogin(user any, token any, cart any) LoginResponse {
+	return LoginResponse{User: user, Token: token, Cart: cart}
 }

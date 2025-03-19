@@ -20,9 +20,6 @@ import (
 )
 
 func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client) {
-	userData := userData.NewModel(db)
-	userService := userServices.NewService(userData)
-	userHandler := userHandler.NewUserHandler(userService)
 
 	productData := productData.ProductModel(db)
 	productService := productServices.ProductService(productData)
@@ -31,6 +28,10 @@ func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client) {
 	cartData := cartData.CartModel(rdb)
 	cartService := cartServices.CartService(cartData)
 	cartHandler := cartHandler.CartHandler(cartService)
+
+	userData := userData.NewModel(db)
+	userService := userServices.NewService(userData, cartData)
+	userHandler := userHandler.NewUserHandler(userService)
 
 	c.POST("/register", userHandler.Register)
 	c.POST("/login", userHandler.Login)

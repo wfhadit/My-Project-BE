@@ -6,12 +6,12 @@ import (
 	"log"
 	"mime/multipart"
 	"my-project-be/config"
+	cart "my-project-be/features/cart"
 	user "my-project-be/features/user"
 	"my-project-be/features/user/handler"
 	"my-project-be/helper"
 	"my-project-be/lib/cloudinary"
 	"my-project-be/middlewares"
-	"time"
 
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/go-playground/validator/v10"
@@ -19,18 +19,18 @@ import (
 )
 
 type service struct {
-	
+	cart  cart.CartModel
 	model user.UserModel
 	pm helper.PasswordManager
 	v *validator.Validate
 }
 
-func NewService(m user.UserModel) user.UserService {
+func NewService(m user.UserModel, c cart.CartModel) user.UserService {
 	return &service{
 		model: m,
 		pm: helper.NewPasswordManager(),
 		v: validator.New(),
-		
+		cart: c,
 	}
 }
 
@@ -56,7 +56,7 @@ func (s *service) Register(newData user.User) error {
 	return nil
 }
 
-func (s *service) Login(loginData user.User) (user.User, string, error) {
+func (s *service) Login(loginData user.User) (user.User, string, []cart.Cart, error) {
 	loginValidate :=handler.LoginRequest{
 		Email:    loginData.Email,
 		Password: loginData.Password,
@@ -64,50 +64,56 @@ func (s *service) Login(loginData user.User) (user.User, string, error) {
 	err := s.v.Struct(&loginValidate)
 	if err != nil {
 		log.Println("terjadi error", err.Error())
-		return user.User{}, "", err
+		return user.User{}, "",[]cart.Cart{}, err
 	}
 
 	data, err := s.model.Login(loginValidate.Email)
 	if err != nil {
-		return user.User{}, "", err
+		return user.User{}, "", []cart.Cart{},err
 	}
 
 	err = s.pm.CheckPassword(loginValidate.Password, data.Password)
 	if err != nil {
-		return user.User{}, "", errors.New(helper.ServiceGeneralError)
+		return user.User{}, "", []cart.Cart{},errors.New(helper.ServiceGeneralError)
 	}
 
 	token, err := middlewares.GenerateJWT(data.ID, data.Nama)
 	if err != nil {
-		return user.User{}, "", errors.New(helper.ServiceGeneralError)
+		return user.User{}, "", []cart.Cart{},errors.New(helper.ServiceGeneralError)
+	}
+	cartData, err := s.cart.GetCart(data.ID)
+	if err != nil {
+		log.Println("error dari database cart", err.Error())
+		return user.User{},"", []cart.Cart{}, err
 	}
 
-	return data, token, nil
+
+	return data, token, cartData,nil
 }
 
-func (s *service) KeepLogin(token *jwt.Token) (user.User, string, error) {
-	userID,_, exp := middlewares.DecodeToken(token)
+func (s *service) KeepLogin(token *jwt.Token) (user.User, string, []cart.Cart,error) {
+	userID,_:= middlewares.DecodeToken(token)
 	result, err := s.model.GetUserByID(userID)
 	if err != nil {
 		log.Println("error dari database user", err.Error())
-		return user.User{},  "",err
+		return user.User{},  "",[]cart.Cart{} ,err
 	}
-
-	if time.Now().Unix() > exp {
-		return result, token.Raw, nil
-	}
-
 	newToken, err := middlewares.GenerateJWT(result.ID, result.Nama)
 	if err != nil {
 		log.Println("error dari token baru", err.Error())
-		return user.User{},"",  err
+		return user.User{},"", []cart.Cart{}, err
+	}
+	cartData, err := s.cart.GetCart(userID)
+	if err != nil {
+		log.Println("error dari database cart", err.Error())
+		return user.User{},"", []cart.Cart{}, err
 	}
 
-	return result, newToken, nil
+	return result, newToken,cartData, nil
 }
 
 func (s *service) Update(token *jwt.Token, newData user.User, file *multipart.FileHeader) (user.User, error) {
-	userID,_,_ := middlewares.DecodeToken(token)
+	userID,_ := middlewares.DecodeToken(token)
 	existingUser, err := s.model.GetUserByID(userID)
 	if err != nil {
 		return user.User{}, errors.New("user tidak ditemukan")

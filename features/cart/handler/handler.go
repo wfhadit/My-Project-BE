@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"my-project-be/features/cart"
 	"my-project-be/helper"
 	"net/http"
@@ -25,6 +26,7 @@ func (cc *CartController) AddCart(c echo.Context) error {
 	}
 	newCart := CartRequest{}
 	errBind := c.Bind(&newCart)
+	log.Println(newCart)
 	if errBind != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType, "Salah input", nil))
 	}

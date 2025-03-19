@@ -2,6 +2,7 @@ package user
 
 import (
 	"mime/multipart"
+	"my-project-be/features/cart"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -17,10 +18,13 @@ type User struct {
 	Alamat       string
 	Foto         string
 }
+
+
+
 type UserService interface {
 	Register(newData User) error
-	Login(loginData User) (User, string, error)
-	KeepLogin(token *jwt.Token) (User, string, error)
+	Login(loginData User) (User, string,[]cart.Cart, error)
+	KeepLogin(token *jwt.Token) (User, string,[]cart.Cart, error)
 	Update(token *jwt.Token, newData User, file *multipart.FileHeader ) (User, error)
 }
 
