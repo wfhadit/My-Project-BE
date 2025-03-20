@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	order "my-project-be/features/order/data"
 	product "my-project-be/features/product/data"
 	user "my-project-be/features/user/data"
 	"os"
@@ -24,6 +25,8 @@ type AppConfig struct {
 	CLOUDINARY_API_SECRET string
 	RedisAddr string
 	RedisPass string
+	MIDTRANS_SERVER_KEY string
+	MIDTRANS_CLIENT_KEY string
 }
 
 func assignEnv(c AppConfig) (AppConfig, bool) {
@@ -83,6 +86,16 @@ func assignEnv(c AppConfig) (AppConfig, bool) {
 	} else {
 		missing = true
 	}
+	if val, found := os.LookupEnv("MIDTRANS_SERVER_KEY"); found {
+		c.MIDTRANS_SERVER_KEY = val
+	} else {
+		missing = true
+	}
+	if val, found := os.LookupEnv("MIDTRANS_CLIENT_KEY"); found {
+		c.MIDTRANS_CLIENT_KEY = val
+	} else {
+		missing = true
+	}
 	return c, missing
 }
 
@@ -106,7 +119,7 @@ func InitSQL(c AppConfig) *gorm.DB {
 		return nil
 	}
 
-	db.AutoMigrate(&user.User{}, &product.Product{})
+	db.AutoMigrate(&user.User{}, &product.Product{}, &order.Order{}, &order.OrderItem{})
 
 
 	return db
