@@ -2,6 +2,7 @@ package main
 
 import (
 	"my-project-be/config"
+	"my-project-be/lib/midtrans"
 	"my-project-be/lib/redis"
 	"my-project-be/routes"
 
@@ -14,10 +15,11 @@ func main() {
 	cfg := config.InitConfig()
 	db := config.InitSQL(cfg)
 	rdb := redis.RedisClient(&cfg)
+	mc := midtrans.GetMidtransClient(&cfg)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	routes.InitRoute(e, db, rdb)
+	routes.InitRoute(e, db, rdb, mc)
 	e.Logger.Fatal(e.Start(":1300"))
 }

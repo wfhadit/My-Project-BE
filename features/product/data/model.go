@@ -1,5 +1,7 @@
 package data
 
+import "my-project-be/features/order/data"
+
 type Product struct {
 	ID          uint `gorm:"primary_key,auto_increment"`
 	Nama        string
@@ -9,4 +11,5 @@ type Product struct {
 	Amount      uint
 	Description string
 	Image       string
+	OrderItems  []data.OrderItem `gorm:"foreign_key:ProductID"`
 }

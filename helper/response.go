@@ -19,3 +19,25 @@ type LoginResponse struct {
 func ResponseFormatLogin(user any, token any, cart any) LoginResponse {
 	return LoginResponse{User: user, Token: token, Cart: cart}
 }
+
+func ResponseGetAllProducts(code int, message any, totalPages any, data any) map[string]any {
+	var result = map[string]any{}
+	result["code"] = code
+	result["message"] = message
+	result["total_pages"] = totalPages
+	if data != nil {
+		result["data"] = data
+	}
+	return result
+}
+
+func ResponseGetOrder(code int, message any, totalPages any, data any, items any) map[string]any {
+	var result = map[string]any{}
+	result["code"] = code
+	result["message"] = message
+	result["items"] = items
+	if data != nil {
+		result["data"] = data
+	}
+	return result
+}

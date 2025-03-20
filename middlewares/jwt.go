@@ -21,7 +21,7 @@ func GenerateJWT(id uint, nama string) (string, error) {
 	data["id"] = id
 	data["nama"] = nama
 	data["iat"] = time.Now().Unix()
-	data["exp"] = time.Now().Add(time.Hour * 3).Unix()
+	data["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	processToken := jwt.NewWithClaims(jwt.SigningMethodHS256, data)
 	result, err := processToken.SignedString([]byte(config.JWTSECRET))
 	if err != nil {

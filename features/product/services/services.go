@@ -18,12 +18,12 @@ func (s *service) CreateProduct(newData product.Product) ( product.Product, erro
 	return result, nil
 }
 
-func (s *service) GetAllProducts(offset int, category, brand, sort, q string) ([]product.Product, error) {
-	result, err := s.model.GetAllProducts(offset, category, brand,  sort, q)
+func (s *service) GetAllProducts(offset int, category, brand, sort, q string) ([]product.Product, int64,error) {
+	result, total, err := s.model.GetAllProducts(offset, category, brand,  sort, q)
 	if err != nil {
-		return []product.Product{}, err
+		return []product.Product{}, 0,err
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetProductByID(productID uint) (product.Product, error) {

@@ -22,9 +22,10 @@ func (m *model) CreateProduct(newData product.Product) ( product.Product, error)
 	return newData, nil
 }
 
-func (m *model) GetAllProducts(offset int, category, brand, sort, q string) ([]product.Product, error) {
+func (m *model) GetAllProducts(offset int, category, brand, sort, q string) ([]product.Product, int64,error) {
 	result := []product.Product{}
-	query := m.connection.Limit(10).Offset(offset)
+	var total int64
+	query := m.connection.Model(&product.Product{})
 	if category != "" {
 		query = query.Where("category = ?", category)
 	}
@@ -34,6 +35,8 @@ func (m *model) GetAllProducts(offset int, category, brand, sort, q string) ([]p
 	if q != "" {
 		query = query.Where("nama LIKE ? OR brand LIKE ?", "%"+q+"%", "%"+q+"%")
 	}
+	query.Count(&total)
+	query = query.Limit(10).Offset(offset)
 	if sort == "asc" {
 		query = query.Order("price ASC")
 	} else if sort == "desc" {
@@ -41,9 +44,9 @@ func (m *model) GetAllProducts(offset int, category, brand, sort, q string) ([]p
 	}
 	err := query.Find(&result).Error
 	if err != nil {
-		return []product.Product{}, err
+		return []product.Product{}, 0, err
 	}
-	return result, nil
+	return result, total,nil
 }
 
 func (m *model) GetProductByID(productID uint) (product.Product, error) {
