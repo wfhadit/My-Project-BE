@@ -26,11 +26,6 @@ import (
 
 func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client, mc midtrans.Client) {
 
-	orderData := orderData.OrderModel(db)
-	orderService := orderServices.OrderService(orderData, mc)
-	orderHandler := orderHandler.OrderHandler(orderService)
-
-
 	productData := productData.ProductModel(db)
 	productService := productServices.ProductService(productData)
 	productHandler := productHandler.ProductHandler(productService)
@@ -42,6 +37,10 @@ func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client, mc midtrans.Client)
 	userData := userData.NewModel(db)
 	userService := userServices.NewService(userData, cartData)
 	userHandler := userHandler.NewUserHandler(userService)
+
+	orderData := orderData.OrderModel(db)
+	orderService := orderServices.OrderService(orderData, mc, cartData)
+	orderHandler := orderHandler.OrderHandler(orderService)
 
 	c.POST("/register", userHandler.Register)
 	c.POST("/login", userHandler.Login)
@@ -58,4 +57,6 @@ func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client, mc midtrans.Client)
 	c.DELETE("/cart", cartHandler.DeleteCart,middlewares.JWTMiddleware())
 
 	c.POST("/order", orderHandler.CreateOrder,middlewares.JWTMiddleware())
+	c.GET("/order", orderHandler.GetLastOrder,middlewares.JWTMiddleware())
+	c.GET("/orders", orderHandler.GetAllOrders,middlewares.JWTMiddleware())
 }

@@ -1,6 +1,8 @@
 package order
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type Order struct {
 	ID            uint
@@ -26,10 +28,13 @@ type OrderItem struct {
 
 type OrderService interface {
 	CreateOrder(newOrder Order, token *jwt.Token) (Order, error)
-	// GetOrder(token *jwt.Token)(Order, []OrderItem, error)
+	GetOrderByUniqueID(token *jwt.Token)(Order, error)
+	GetAllOrders(token *jwt.Token) ([]Order, error)
 }
 
 type OrderModel interface {
-	CreateOrder(newOrder Order,  userid uint) (Order, error)
-	// GetOrder(userid uint) (Order, []OrderItem, error)
+	CreateOrder(newOrder Order) (Order, error)
+	GetOrderByUniqueID(uniqueID string, userid uint, newStatus string) (Order, error)
+	GetAllOrders(userid uint) ([]Order, error)
+	GetLastOrder(userid uint) (Order, error)
 }
