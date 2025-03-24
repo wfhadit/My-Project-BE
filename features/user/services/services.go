@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"my-project-be/config"
 	cart "my-project-be/features/cart"
+	"my-project-be/features/order"
 	user "my-project-be/features/user"
 	"my-project-be/features/user/handler"
 	"my-project-be/helper"
@@ -16,6 +17,7 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/veritrans/go-midtrans"
 )
 
 type service struct {
@@ -23,14 +25,18 @@ type service struct {
 	model user.UserModel
 	pm helper.PasswordManager
 	v *validator.Validate
+	modelOrder order.OrderModel
+	midtrans midtrans.Client
 }
 
-func NewService(m user.UserModel, c cart.CartModel) user.UserService {
+func NewService(m user.UserModel, c cart.CartModel, mo order.OrderModel,midtrans midtrans.Client) user.UserService {
 	return &service{
 		model: m,
 		pm: helper.NewPasswordManager(),
 		v: validator.New(),
 		cart: c,
+		modelOrder: mo,
+		midtrans: midtrans,
 	}
 }
 
@@ -56,7 +62,7 @@ func (s *service) Register(newData user.User) error {
 	return nil
 }
 
-func (s *service) Login(loginData user.User) (user.User, string, []cart.Cart, error) {
+func (s *service) Login(loginData user.User) (user.User, string, []cart.Cart,[]order.Order,  error) {
 	loginValidate :=handler.LoginRequest{
 		Email:    loginData.Email,
 		Password: loginData.Password,
@@ -64,52 +70,101 @@ func (s *service) Login(loginData user.User) (user.User, string, []cart.Cart, er
 	err := s.v.Struct(&loginValidate)
 	if err != nil {
 		log.Println("terjadi error", err.Error())
-		return user.User{}, "",[]cart.Cart{}, err
+		return user.User{}, "",[]cart.Cart{},[]order.Order{}, err
 	}
 
 	data, err := s.model.Login(loginValidate.Email)
 	if err != nil {
-		return user.User{}, "", []cart.Cart{},err
+		return user.User{}, "", []cart.Cart{},[]order.Order{},err
 	}
 
 	err = s.pm.CheckPassword(loginValidate.Password, data.Password)
 	if err != nil {
-		return user.User{}, "", []cart.Cart{},errors.New(helper.ServiceGeneralError)
+		return user.User{}, "", []cart.Cart{},[]order.Order{},err
 	}
 
 	token, err := middlewares.GenerateJWT(data.ID, data.Nama)
 	if err != nil {
-		return user.User{}, "", []cart.Cart{},errors.New(helper.ServiceGeneralError)
+		return user.User{}, "", []cart.Cart{},[]order.Order{},err
 	}
 	cartData, err := s.cart.GetCart(data.ID)
 	if err != nil {
 		log.Println("error dari database cart", err.Error())
-		return user.User{},"", []cart.Cart{}, err
+		return user.User{},"", []cart.Cart{}, []order.Order{},err
+	}
+	orders, err := s.modelOrder.GetAllOrders(data.ID)
+	if err != nil {
+		log.Println("error dari database order", err.Error())
+		return user.User{},"", []cart.Cart{}, []order.Order{},err
+	}
+	client := s.midtrans
+	coreGateway := midtrans.CoreGateway{Client: client}
+	updatedOrders := []order.Order{}
+	for _, order := range orders {
+		if order.Status == "pending" {
+			resp, err := coreGateway.Status(order.OrderUniqueID)
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
+			if order.Status != resp.TransactionStatus {order.Status = resp.TransactionStatus
+				_, errUpdate := s.modelOrder.GetOrderByUniqueID(order.OrderUniqueID, data.ID, order.Status)
+				if errUpdate != nil {
+					log.Println(errUpdate.Error())
+				}
+			}
+		}
+		updatedOrders = append(updatedOrders, order)
 	}
 
 
-	return data, token, cartData,nil
+	return data, token, cartData,updatedOrders,nil
 }
 
-func (s *service) KeepLogin(token *jwt.Token) (user.User, string, []cart.Cart,error) {
+func (s *service) KeepLogin(token *jwt.Token) (user.User, string, []cart.Cart,[]order.Order,error) {
 	userID,_:= middlewares.DecodeToken(token)
 	result, err := s.model.GetUserByID(userID)
 	if err != nil {
 		log.Println("error dari database user", err.Error())
-		return user.User{},  "",[]cart.Cart{} ,err
+		return user.User{},  "",[]cart.Cart{},[]order.Order{},err
 	}
 	newToken, err := middlewares.GenerateJWT(result.ID, result.Nama)
 	if err != nil {
 		log.Println("error dari token baru", err.Error())
-		return user.User{},"", []cart.Cart{}, err
+		return user.User{},"", []cart.Cart{},[]order.Order{}, err
 	}
 	cartData, err := s.cart.GetCart(userID)
 	if err != nil {
 		log.Println("error dari database cart", err.Error())
-		return user.User{},"", []cart.Cart{}, err
+		return user.User{},"", []cart.Cart{},[]order.Order{}, err
+	}
+	orders, err := s.modelOrder.GetAllOrders(userID)
+	if err != nil {
+		log.Println("error dari database order", err.Error())
+		return user.User{},"", []cart.Cart{},[]order.Order{}, err
+	}
+	client := s.midtrans
+	coreGateway := midtrans.CoreGateway{Client: client}
+	updatedOrders := []order.Order{}
+	for _, order := range orders {
+		if order.Status == "pending" {
+			resp, err := coreGateway.Status(order.OrderUniqueID)
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
+			if order.Status != resp.TransactionStatus {order.Status = resp.TransactionStatus
+				_, errUpdate := s.modelOrder.GetOrderByUniqueID(order.OrderUniqueID, userID, order.Status)
+				if errUpdate != nil {
+					log.Println(errUpdate.Error())
+				}
+			}
+		}
+		updatedOrders = append(updatedOrders, order)
 	}
 
-	return result, newToken,cartData, nil
+
+	return result, newToken,cartData, updatedOrders,nil
 }
 
 func (s *service) Update(token *jwt.Token, newData user.User, file *multipart.FileHeader) (user.User, error) {

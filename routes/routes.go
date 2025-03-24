@@ -34,13 +34,15 @@ func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client, mc midtrans.Client)
 	cartService := cartServices.CartService(cartData)
 	cartHandler := cartHandler.CartHandler(cartService)
 
-	userData := userData.NewModel(db)
-	userService := userServices.NewService(userData, cartData)
-	userHandler := userHandler.NewUserHandler(userService)
-
 	orderData := orderData.OrderModel(db)
 	orderService := orderServices.OrderService(orderData, mc, cartData)
 	orderHandler := orderHandler.OrderHandler(orderService)
+
+	userData := userData.NewModel(db)
+	userService := userServices.NewService(userData, cartData, orderData, mc)
+	userHandler := userHandler.NewUserHandler(userService)
+
+	
 
 	c.POST("/register", userHandler.Register)
 	c.POST("/login", userHandler.Login)
