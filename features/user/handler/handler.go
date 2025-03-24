@@ -3,6 +3,7 @@ package handler
 import (
 	"mime/multipart"
 	cart "my-project-be/features/cart/handler"
+	order "my-project-be/features/order/handler"
 	user "my-project-be/features/user"
 	"my-project-be/helper"
 	"net/http"
@@ -18,6 +19,7 @@ const (
 
 type UserController struct {
 	service user.UserService
+	
 }
 
 func NewUserHandler(s user.UserService) *UserController {
@@ -46,12 +48,25 @@ func (ct *UserController) Login(c echo.Context) error {
 	if errBind != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,bindError+errBind.Error(), nil))
 	}
-	result, token, cartResult,err := ct.service.Login(user.User{Email: input.Email, Password: input.Password})
+	result, token, cartResult,orderResult,err := ct.service.Login(user.User{Email: input.Email, Password: input.Password})
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
 	}
+	responseCart := []cart.CartResponse{}
+	for _, v := range cartResult {
+		responseCart = append(responseCart, cart.CartResponse{ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity})
+	}
+	responseOrder := []order.OrderResponse{}
+	for _, v := range orderResult {
+		responseOrderItems := []order.OrderItemResponse{}
+		for _, w := range v.Items {
+			responseOrderItems = append(responseOrderItems, order.OrderItemResponse{ID: w.ID, ProductID: w.ProductID, ProductName: w.ProductName, ProductImage: w.ProductImage, ProductPrice: w.ProductPrice, Quantity: w.Quantity})
+		}
+		responseOrder = append(responseOrder, order.OrderResponse{ID: v.ID, OrderUniqueID: v.OrderUniqueID, UserID: v.UserID, TotalPrice: v.TotalPrice, Status: v.Status, Items: responseOrderItems, PaymentMethod: v.PaymentMethod, VANumber: v.VANumber, CreatedAt: v.CreatedAt})
+	}
+
 	responseData := LoginResponse{ ID: result.ID, Nama: result.Nama, Email: result.Email, JenisKelamin: result.JenisKelamin, TanggalLahir: result.TanggalLahir,NomorHP: result.NomorHP, Alamat: result.Alamat, Foto: result.Foto}
-	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, token,cartResult))
+	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, token,responseCart, responseOrder))
 }
 
 func (ct *UserController) KeepLogin(c echo.Context) error {
@@ -59,7 +74,7 @@ func (ct *UserController) KeepLogin(c echo.Context) error {
 	if !ok {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"salah cara ambil token", nil))
 	}
-	result, newToken,cartResult,err := ct.service.KeepLogin(token)
+	result, newToken,cartResult,orderResult,err := ct.service.KeepLogin(token)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
 	}
@@ -67,8 +82,18 @@ func (ct *UserController) KeepLogin(c echo.Context) error {
 	for _, v := range cartResult {
 		responseCart = append(responseCart, cart.CartResponse{ ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity })
 	}
+
+	responseOrder := []order.OrderResponse{}
+	for _, v := range orderResult {
+		responseOrderItems := []order.OrderItemResponse{}
+		for _, w := range v.Items {
+			responseOrderItems = append(responseOrderItems, order.OrderItemResponse{ID: w.ID, ProductID: w.ProductID, ProductName: w.ProductName, ProductImage: w.ProductImage, ProductPrice: w.ProductPrice, Quantity: w.Quantity})
+		}
+		responseOrder = append(responseOrder, order.OrderResponse{ID: v.ID, OrderUniqueID: v.OrderUniqueID, UserID: v.UserID, TotalPrice: v.TotalPrice, Status: v.Status, Items: responseOrderItems , PaymentMethod: v.PaymentMethod, VANumber: v.VANumber, CreatedAt: v.CreatedAt})
+		
+	}
 	responseData := LoginResponse{ ID: result.ID,Nama: result.Nama, Email: result.Email, JenisKelamin: result.JenisKelamin, TanggalLahir: result.TanggalLahir,NomorHP: result.NomorHP, Alamat: result.Alamat, Foto: result.Foto }
-	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, newToken, responseCart))
+	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, newToken, responseCart, responseOrder))
 }
 
 func (ct *UserController) Update(c echo.Context) error {
