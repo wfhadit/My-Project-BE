@@ -11,14 +11,15 @@ func ResponseFormat(code int, message any, data any) map[string]any {
 }
 
 type LoginResponse struct {
-	User  any `json:"user"`
-	Token any `json:"token"`
-	Cart  any `json:"cart"`
-	Order any `json:"order"`
+	Message any `json:"message"`
+	User    any `json:"user"`
+	Token   any `json:"token"`
+	Cart    any `json:"cart"`
+	Order   any `json:"order"`
 }
 
-func ResponseFormatLogin(user any, token any, cart any, order any) LoginResponse {
-	return LoginResponse{User: user, Token: token, Cart: cart, Order: order}
+func ResponseFormatLogin(message any, user any, token any, cart any, order any) LoginResponse {
+	return LoginResponse{Message: message, User: user, Token: token, Cart: cart, Order: order}
 }
 
 func ResponseGetAllProducts(code int, message any, totalPages any, data any) map[string]any {
