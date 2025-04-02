@@ -30,14 +30,14 @@ func (ct *UserController) Register(c echo.Context) error {
 	newUser := RegisterRequest{}
 	errBind := c.Bind(&newUser)
 	if errBind != nil {
-		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,bindError+errBind.Error(), nil))
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Error bind", nil))
 	}
 	errInsert := ct.service.Register(user.User{ Nama: newUser.Nama, Email: newUser.Email, Password: newUser.Password})
 	if errInsert != nil {
 		if strings.Contains(errInsert.Error(), "validation") {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Invalid input data", nil))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
+		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Invalid input data", nil))
 	}
 	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Register berhasil, silahkan login",nil))
 }
@@ -46,11 +46,11 @@ func (ct *UserController) Login(c echo.Context) error {
 	input := LoginRequest{}
 	errBind := c.Bind(&input)
 	if errBind != nil {
-		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,bindError+errBind.Error(), nil))
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Error bind", nil))
 	}
 	result, token, cartResult,orderResult,err := ct.service.Login(user.User{Email: input.Email, Password: input.Password})
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,helper.UserInputError, nil))
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Incorrect email or password", nil))
 	}
 	responseCart := []cart.CartResponse{}
 	for _, v := range cartResult {
@@ -66,7 +66,7 @@ func (ct *UserController) Login(c echo.Context) error {
 	}
 
 	responseData := LoginResponse{ ID: result.ID, Nama: result.Nama, Email: result.Email, JenisKelamin: result.JenisKelamin, TanggalLahir: result.TanggalLahir,NomorHP: result.NomorHP, Alamat: result.Alamat, Foto: result.Foto}
-	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, token,responseCart, responseOrder))
+	return c.JSON(http.StatusOK, helper.ResponseFormatLogin("Login success",responseData, token,responseCart, responseOrder))
 }
 
 func (ct *UserController) KeepLogin(c echo.Context) error {
@@ -93,7 +93,7 @@ func (ct *UserController) KeepLogin(c echo.Context) error {
 		
 	}
 	responseData := LoginResponse{ ID: result.ID,Nama: result.Nama, Email: result.Email, JenisKelamin: result.JenisKelamin, TanggalLahir: result.TanggalLahir,NomorHP: result.NomorHP, Alamat: result.Alamat, Foto: result.Foto }
-	return c.JSON(http.StatusOK, helper.ResponseFormatLogin(responseData, newToken, responseCart, responseOrder))
+	return c.JSON(http.StatusOK, helper.ResponseFormatLogin("Login berhasil",responseData, newToken, responseCart, responseOrder))
 }
 
 func (ct *UserController) Update(c echo.Context) error {
