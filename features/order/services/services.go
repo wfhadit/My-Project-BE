@@ -5,6 +5,7 @@ import (
 	"log"
 	"my-project-be/features/cart"
 	"my-project-be/features/order"
+	"my-project-be/features/product"
 	"my-project-be/middlewares"
 
 	"time"
@@ -17,10 +18,11 @@ type service struct {
 	model order.OrderModel
 	midtrans midtrans.Client
 	cart cart.CartModel
+	product product.ProductModel
 }
 
-func OrderService(om order.OrderModel, midtrans midtrans.Client, cart cart.CartModel) order.OrderService {
-	return &service{model: om, midtrans: midtrans, cart: cart}
+func OrderService(om order.OrderModel, midtrans midtrans.Client, cart cart.CartModel, product product.ProductModel) order.OrderService {
+	return &service{model: om, midtrans: midtrans, cart: cart, product: product}
 }
 
 func (s *service) CreateOrder(newOrder order.Order, token *jwt.Token) (order.Order, error) {
@@ -54,10 +56,22 @@ func (s *service) CreateOrder(newOrder order.Order, token *jwt.Token) (order.Ord
 	if errDelete != nil {
 		return order.Order{}, errDelete
 	}
+	for _, item := range newOrder.Items {
+		existingProduct, err := s.product.GetProductByID(item.ProductID)
+		if err != nil {
+			return order.Order{}, err
+		}
+		existingProduct.Amount -= item.Quantity
+		err = s.product.UpdateProductAmount(item.ProductID, existingProduct.Amount)
+		if err != nil {
+			return order.Order{}, err
+		}
+	}	
 	result, err := s.model.CreateOrder(newOrder)
 	if err != nil {
 		return order.Order{}, err
 	}
+	
 
 	
 	return result, nil

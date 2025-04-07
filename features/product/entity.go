@@ -15,7 +15,7 @@ type ProductService interface {
 	CreateProduct(newData Product) (Product, error)
 	GetAllProducts(offset int, category, brand, sort, q string) ([]Product, int64, error)
 	GetProductByID(productID uint) (Product, error)
-	// UpdateProductByID(productid uint, newData Product) (Product, error)
+	UpdateProductByID(productid uint, newData Product) (Product, error)
 	// DeleteProductByID(productid uint) error
 }
 
@@ -23,6 +23,7 @@ type ProductModel interface {
 	CreateProduct(newData Product) (Product, error)
 	GetAllProducts(offset int, category, brand, sort, q string) ([]Product, int64, error)
 	GetProductByID(productID uint) (Product, error)
-	// UpdateProductByID(productid uint, newData Product) (Product, error)
+	UpdateProductByID(productid uint, newData Product) (Product, error)
+	UpdateProductAmount(productid uint, amount uint) error
 	// DeleteProductByID(productid uint) error
 }

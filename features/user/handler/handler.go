@@ -39,7 +39,7 @@ func (ct *UserController) Register(c echo.Context) error {
 		}
 		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Invalid input data", nil))
 	}
-	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Register berhasil, silahkan login",nil))
+	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Register success, please login",nil))
 }
 
 func (ct *UserController) Login(c echo.Context) error {

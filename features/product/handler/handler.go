@@ -68,3 +68,26 @@ func (pc *ProductController) GetProductById(c echo.Context) error {
 	response := ProductResponse{ ID: result.ID, Nama: result.Nama, Brand: result.Brand, Category: result.Category, Price: result.Price, Amount: result.Amount, Description: result.Description, Image: result.Image }
 	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Product berhasil dibuat", response))
 }
+
+func (pc *ProductController) UpdateProductByID(c echo.Context) error {
+	_, errToken := c.Get("user").(*jwt.Token)
+	if !errToken {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnauthorized, "Token tidak terbaca", nil))
+	}
+	productID, err := strconv.Atoi(c.Param("productID"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusBadRequest, "Salah input", nil))
+	}
+	newProduct := ProductRequest{}
+	errBind := c.Bind(&newProduct)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusBadRequest, "Salah input", nil))
+	}
+	result, errInsert := pc.service.UpdateProductByID(uint(productID), product.Product{ Nama: newProduct.Nama, Brand: newProduct.Brand, Category: newProduct.Category, Price: newProduct.Price, Amount: newProduct.Amount, Description: newProduct.Description, Image: newProduct.Image })
+	if errInsert != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusInternalServerError, "Server gagal membaca input", nil))
+	}
+	response := ProductResponse{ ID: result.ID, Nama: result.Nama, Brand: result.Brand, Category: result.Category, Price: result.Price, Amount: result.Amount, Description: result.Description, Image: result.Image }
+	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Product berhasil dibuat", response))
+	
+}
