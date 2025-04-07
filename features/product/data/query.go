@@ -58,3 +58,19 @@ func (m *model) GetProductByID(productID uint) (product.Product, error) {
 	return result, nil
 }
 
+func (m *model) UpdateProductByID(productID uint, newData product.Product) (product.Product, error) {
+	err := m.connection.Model(&product.Product{}).Where("id = ?", productID).Updates(&newData).Error
+	if err != nil {
+		return product.Product{}, err
+	}
+	return newData, nil
+}
+
+func (m *model) UpdateProductAmount(productID uint, amount uint)  error {
+	err := m.connection.Model(&product.Product{}).Where("id = ?", productID).Update("amount", amount).Error
+	if err != nil {
+		return  err
+	}
+	return  nil
+}
+

@@ -33,3 +33,36 @@ func (s *service) GetProductByID(productID uint) (product.Product, error) {
 	}
 	return result, nil
 }
+
+func (s *service) UpdateProductByID(productid uint, newData product.Product) (product.Product, error) {
+	existingProduct, err := s.model.GetProductByID(productid)
+	if err != nil {
+		return product.Product{}, err
+	}
+	if newData.Nama != "" {
+		existingProduct.Nama = newData.Nama
+	}
+	if newData.Brand != "" {
+		existingProduct.Brand = newData.Brand
+	}
+	if newData.Category != "" {
+		existingProduct.Category = newData.Category
+	}
+	if newData.Price != 0 {
+		existingProduct.Price = newData.Price
+	}
+	if newData.Amount != 0 {
+		existingProduct.Amount = newData.Amount
+	}
+	if newData.Description != "" {
+		existingProduct.Description = newData.Description
+	}
+	if newData.Image != "" {
+		existingProduct.Image = newData.Image
+	}
+	result, err := s.model.UpdateProductByID(productid, existingProduct)
+	if err != nil {
+		return product.Product{}, err
+	}
+	return result, nil
+}

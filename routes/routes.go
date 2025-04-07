@@ -35,7 +35,7 @@ func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client, mc midtrans.Client)
 	cartHandler := cartHandler.CartHandler(cartService)
 
 	orderData := orderData.OrderModel(db)
-	orderService := orderServices.OrderService(orderData, mc, cartData)
+	orderService := orderServices.OrderService(orderData, mc, cartData, productData)
 	orderHandler := orderHandler.OrderHandler(orderService)
 
 	userData := userData.NewModel(db)
@@ -52,6 +52,7 @@ func InitRoute(c *echo.Echo, db *gorm.DB, rdb *redis.Client, mc midtrans.Client)
 	c.POST("/product", productHandler.CreateProduct,middlewares.JWTMiddleware())
 	c.GET("/search", productHandler.GetAllProduct)
 	c.GET("/product/:productID", productHandler.GetProductById)
+	c.PATCH("/product/:productID", productHandler.UpdateProductByID,middlewares.JWTMiddleware())
 
 	c.POST("/cart", cartHandler.AddCart,middlewares.JWTMiddleware())
 	c.GET("/cart", cartHandler.GetCart,middlewares.JWTMiddleware())
