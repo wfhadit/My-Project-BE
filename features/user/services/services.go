@@ -41,6 +41,7 @@ func NewService(m user.UserModel, c cart.CartModel, mo order.OrderModel,midtrans
 }
 
 func (s *service) Register(newData user.User) error {
+	
 	registerValidate := handler.RegisterRequest{
 		Nama:     newData.Nama,
 		Email:    newData.Email,
@@ -49,6 +50,10 @@ func (s *service) Register(newData user.User) error {
 	err := s.v.Struct(&registerValidate)
 	if err != nil {
 		return err
+	}
+	exist, errCheck := s.model.Login(newData.Email)
+	if errCheck == nil && exist.ID != 0 {
+		return errors.New("Email already exist")
 	}
 
 	result, _ := s.pm.HashPassword(newData.Password)

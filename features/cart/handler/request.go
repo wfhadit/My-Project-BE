@@ -6,4 +6,5 @@ type CartRequest struct {
 	ProductImage string `json:"product_image" form:"product_image" `
 	ProductPrice uint   `json:"product_price" form:"product_price" `
 	Quantity     uint   `json:"quantity" form:"quantity" `
+	Stock        uint   `json:"stock" form:"stock" `
 }
