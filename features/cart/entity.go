@@ -8,6 +8,7 @@ type Cart struct {
 	ProductImage string
 	ProductPrice uint
 	Quantity     uint
+	Stock        uint
 }
 
 type CartService interface {

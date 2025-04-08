@@ -6,4 +6,5 @@ type CartResponse struct {
 	ProductImage string `json:"product_image"`
 	ProductPrice uint   `json:"product_price"`
 	Quantity     uint   `json:"quantity"`
+	Stock        uint   `json:"stock"`
 }

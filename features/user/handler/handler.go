@@ -35,9 +35,9 @@ func (ct *UserController) Register(c echo.Context) error {
 	errInsert := ct.service.Register(user.User{ Nama: newUser.Nama, Email: newUser.Email, Password: newUser.Password})
 	if errInsert != nil {
 		if strings.Contains(errInsert.Error(), "validation") {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Invalid input data", nil))
+			return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Email already exist", nil))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Invalid input data", nil))
+		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusUnsupportedMediaType,"Email already exist", nil))
 	}
 	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Register success, please login",nil))
 }

@@ -30,7 +30,7 @@ func (cc *CartController) AddCart(c echo.Context) error {
 	if errBind != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseFormat(http.StatusUnsupportedMediaType, "Salah input", nil))
 	}
-	errInsert := cc.service.AddCart(token, cart.Cart{ ProductID: newCart.ProductID, ProductNama: newCart.ProductNama, ProductImage: newCart.ProductImage, ProductPrice: newCart.ProductPrice, Quantity: newCart.Quantity }) 
+	errInsert := cc.service.AddCart(token, cart.Cart{ ProductID: newCart.ProductID, ProductNama: newCart.ProductNama, ProductImage: newCart.ProductImage, ProductPrice: newCart.ProductPrice, Quantity: newCart.Quantity, Stock: newCart.Stock }) 
 	if errInsert != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ResponseFormat(http.StatusInternalServerError, "Server gagal membaca input", nil))
 	}
@@ -48,7 +48,7 @@ func (cc *CartController) GetCart(c echo.Context) error {
 	}
 	response := []CartResponse{}
 	for _, v := range result {
-		response = append(response, CartResponse{ ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity })
+		response = append(response, CartResponse{ ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity, Stock: v.Stock })
 	}
 	return c.JSON(http.StatusCreated, helper.ResponseFormat(http.StatusCreated, "Cart berhasil dibuat", response))
 	
