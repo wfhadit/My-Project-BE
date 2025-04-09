@@ -54,7 +54,7 @@ func (ct *UserController) Login(c echo.Context) error {
 	}
 	responseCart := []cart.CartResponse{}
 	for _, v := range cartResult {
-		responseCart = append(responseCart, cart.CartResponse{ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity})
+		responseCart = append(responseCart, cart.CartResponse{ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity, Stock: v.Stock})
 	}
 	responseOrder := []order.OrderResponse{}
 	for _, v := range orderResult {
@@ -80,7 +80,7 @@ func (ct *UserController) KeepLogin(c echo.Context) error {
 	}
 	responseCart := []cart.CartResponse{}
 	for _, v := range cartResult {
-		responseCart = append(responseCart, cart.CartResponse{ ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity })
+		responseCart = append(responseCart, cart.CartResponse{ ProductID: v.ProductID, ProductNama: v.ProductNama, ProductImage: v.ProductImage, ProductPrice: v.ProductPrice, Quantity: v.Quantity, Stock: v.Stock })
 	}
 
 	responseOrder := []order.OrderResponse{}
