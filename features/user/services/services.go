@@ -184,7 +184,7 @@ func (s *service) Update(token *jwt.Token, newData user.User, file *multipart.Fi
 	if newData.Email != "" {
 		existingUser.Email = newData.Email
 	}
-	if newData.TanggalLahir != "" {
+	if newData.TanggalLahir != "" && newData.TanggalLahir != "undefined" {
 		existingUser.TanggalLahir = newData.TanggalLahir
 	}
 	if newData.JenisKelamin != "" {
